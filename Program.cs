@@ -9,6 +9,7 @@ using System.IO;
 using System.Globalization;
 using Ara3D;
 using System.Drawing;
+using System.Diagnostics;
 
 namespace FezConverter
 {
@@ -546,12 +547,13 @@ namespace FezConverter
             File.Copy(trileSetPath.Replace(".xml", ".png"), Path.Combine(exportPath, Path.GetFileNameWithoutExtension(trileSetPath) + ".png"),true);
 
             int currentConvert = 1;
-
             XmlNodeList triles = modelDoc.SelectNodes("/Level/Triles/Entry/TrileInstance");
             int totalConverts = triles.Count;
             foreach(XmlNode trile in triles)
             {
-                Console.WriteLine(currentConvert + "/" + totalConverts + " Triles");
+                Console.SetCursorPosition(0, Console.CursorTop);
+                Console.Write(currentConvert + "/" + totalConverts + " triles");
+
                 XmlNode posNode = trile.SelectSingleNode("./Position/Vector3");
                 Vector3 pos = new Vector3
                 (
@@ -569,12 +571,13 @@ namespace FezConverter
             mtlData += "\n\n";
 
 
-            currentConvert = 1;
+            currentConvert = 1; Console.WriteLine();
             XmlNodeList artObjects = modelDoc.SelectNodes("/Level/ArtObjects/Entry/ArtObjectInstance");
             totalConverts = artObjects.Count;
             foreach (XmlNode artObject in artObjects)
             {
-                Console.WriteLine(currentConvert + "/" + totalConverts + " Art objects");
+                Console.SetCursorPosition(0, Console.CursorTop);
+                Console.Write(currentConvert + "/" + totalConverts + " art objects");
                 string artPath = Path.Combine(mainPath, "art objects", artObject.Attributes["name"].Value.ToLower().Replace(" ", "_") + ".xml");
 
                 File.Copy(artPath.Replace(".xml", ".png"), Path.Combine(exportPath, Path.GetFileNameWithoutExtension(artPath) + ".png"),true);
@@ -609,18 +612,20 @@ namespace FezConverter
                 currentConvert++;
             }
 
-            currentConvert = 1;
+            currentConvert = 1; Console.WriteLine();
             XmlNodeList backgroundPlanes = modelDoc.SelectNodes("/Level/BackgroundPlanes/Entry/BackgroundPlane");
             totalConverts = backgroundPlanes.Count;
+
             foreach (XmlNode backgroundPlane in backgroundPlanes)
             {
-                Console.WriteLine(currentConvert + "/" + totalConverts + " Background planes");
+                Console.SetCursorPosition(0, Console.CursorTop);
+                Console.Write(currentConvert + "/" + totalConverts + " background planes");
                 string artPath = Path.Combine(mainPath, "background planes", backgroundPlane.Attributes["textureName"].Value.ToLower().Replace(" ", "_") + ".png");
 
                 if (backgroundPlane.Attributes["animated"].Value == "True")
                     artPath = artPath.Replace(".png", ".ani.png");
 
-                File.Copy(artPath, Path.Combine(exportPath, Path.GetFileName(artPath)));
+                File.Copy(artPath, Path.Combine(exportPath, Path.GetFileName(artPath)), true);
 
                 XmlNode posNode = backgroundPlane.SelectSingleNode("./Position/Vector3");
                 Vector3 pos = new Vector3
@@ -707,7 +712,8 @@ namespace FezConverter
                 return;
             }
 
-            Console.WriteLine(modelDoc.DocumentElement.Name);
+            Stopwatch sw = new Stopwatch(); sw.Start(); // Report processing time
+            Console.WriteLine("Currently converting a " + modelDoc.DocumentElement.Name);
 
             switch (modelDoc.DocumentElement.Name)
             {
@@ -728,8 +734,8 @@ namespace FezConverter
                     break;
             }
 
-            Console.WriteLine("Finished !");
-            Console.ReadLine();
+            sw.Stop();
+            Console.WriteLine("Finished converting in " + sw.Elapsed + "! Press any key to exit."); Console.ReadLine();
         }
 
         public static IEnumerable<T> Shim<T>(IEnumerable enumerable)
